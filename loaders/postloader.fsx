@@ -11,6 +11,7 @@ type Post = {
     link : string
     title: string
     author: string option
+    avatar: string option
     published: System.DateTime option
     tags: string list
     content: string
@@ -69,6 +70,12 @@ let loadFile n =
         with
         | _ -> None
 
+    let avatar =
+        try
+            config |> List.tryFind (fun n -> n.ToLower().StartsWith "avatar" ) |> Option.map (fun n -> n.Split(':').[1] |> trimString)
+        with
+        | _ -> None
+
     let published =
         try
             config |> List.tryFind (fun n -> n.ToLower().StartsWith "published" ) |> Option.map (fun n -> n.Split(':').[1] |> trimString |> System.DateTime.Parse)
@@ -89,6 +96,7 @@ let loadFile n =
       link = link
       title = title
       author = author
+      avatar = avatar
       published = published
       tags = tags
       content = content }

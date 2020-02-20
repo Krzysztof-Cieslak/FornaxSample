@@ -1,4 +1,4 @@
-#r "../src/Fornax.Core/bin/Release/netstandard2.0/Fornax.Core.dll"
+#r "_lib/Fornax.Core.dll"
 
 open Config
 open System.IO

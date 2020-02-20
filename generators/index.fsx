@@ -1,47 +1,54 @@
 #r "../_lib/Fornax.Core.dll"
-#if !FORNAX
-#load "../loaders/postloader.fsx"
-#endif
+#load "layout.fsx"
 
 open Html
 
-let injectWebsocketCode (webpage:string) =
-    let websocketScript =
-        """
-        <script type="text/javascript">
-          var wsUri = "ws://localhost:8080/websocket";
-      function init()
-      {
-        websocket = new WebSocket(wsUri);
-        websocket.onclose = function(evt) { onClose(evt) };
-      }
-      function onClose(evt)
-      {
-        console.log('closing');
-        websocket.close();
-        document.location.reload();
-      }
-      window.addEventListener("load", init, false);
-      </script>
-        """
-    let head = "<head>"
-    let index = webpage.IndexOf head
-    webpage.Insert ( (index + head.Length + 1),websocketScript)
-
 let generate' (ctx : SiteContents) (_: string) =
-    let posts = ctx.TryGetValues<Postloader.Post> () |> Option.defaultValue Seq.empty
+  let posts = ctx.TryGetValues<Postloader.Post> () |> Option.defaultValue Seq.empty
+  let siteInfo = ctx.TryGetValue<Globalloader.SiteInfo> ()
+  let desc =
+    siteInfo
+    |> Option.map (fun si -> si.description)
+    |> Option.defaultValue ""
 
-    let psts =
-        posts
-        |> Seq.toList
-        |> List.map (fun p -> span [] [!! p.link] )
 
-    html [] [
-        div [] psts
+  let psts =
+    posts
+    |> Seq.toList
+    |> List.map (fun post ->
+      div [Class "card article"] [
+        div [Class "card-content"] [
+          if post.avatar.IsSome then
+            div [Class "media"] [
+              img [Src post.avatar.Value]
+            ]
+          div [Class "media-content has-text-centered"] [
+            p [Class "title article-title"; ] [ a [Href post.link] [!! post.title]]
+            p [Class "subtitle is-6 article-subtitle"] [
+              a [Href "#"] [!! (defaultArg post.author "")]
+              !! (sprintf "on %A" post.published)
+            ]
+          ]
+        ]
+        div [Class "content article-body"] [
+          !! post.content
+        ]
+      ])
+
+  Layout.layout ctx "Index" [
+    section [Class "hero is-info is-medium is-bold"] [
+      div [Class "hero-body"] [
+        div [Class "container has-text-centered"] [
+          h1 [Class "title"] [!!desc]
+        ]
+      ]
     ]
+    div [Class "container"] [
+      section [Class "articles"] [
+        div [Class "column is-8 is-offset-2"] psts
+      ]
+    ]]
 
 let generate (ctx : SiteContents) (projectRoot: string) (page: string) =
-    let disableLiveRefresh = ctx.TryGetValue<Postloader.PostConfig> () |> Option.map (fun n -> n.disableLiveRefresh) |> Option.defaultValue false
-    generate' ctx page
-    |> HtmlElement.ToString
-    |> fun n -> if disableLiveRefresh then n else injectWebsocketCode n
+  generate' ctx page
+  |> Layout.render ctx
