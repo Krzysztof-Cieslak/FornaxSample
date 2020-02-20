@@ -7,8 +7,7 @@ type Page = {
 
 let loader (projectRoot: string) (siteContet: SiteContents) =
     siteContet.Add({title = "Home"; link = "/"})
-    siteContet.Add({title = "Archive"; link = "/archive"})
-    siteContet.Add({title = "About"; link = "/about"})
-    siteContet.Add({title = "Contact"; link = "/contact"})
+    siteContet.Add({title = "About"; link = "/about.html"})
+    siteContet.Add({title = "Contact"; link = "/contact.html"})
 
     siteContet

@@ -1,7 +1,6 @@
 ---
 layout: post
 title: Some nice post title
-avatar: /images/avatar.jpg
 author: @k_cieslak
 published: 2020-02-19
 ---
